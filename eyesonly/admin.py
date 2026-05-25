@@ -32,6 +32,54 @@ try:
 except NotRegistered:
 	pass
 
+@admin.register(ManagerRole)
+class ManagerRoleAdmin(admin.ModelAdmin):
+	list_display = ('id', 'manager', 'group', 'role')
+	list_filter = ('role', 'group')
+	search_fields = ('manager__username', 'manager__email', 'group__uuid', 'group__encrypted_name')
+	ordering = ('-id',)
+ 
+ 
+@admin.register(Device)
+class DeviceAdmin(admin.ModelAdmin):
+	list_display = (
+		'id',
+		'device_identifier',
+		'owner_user',
+		'public_key_algorithm',
+		'public_key_fingerprint',
+		'fcm_status',
+	)
+	search_fields = ('device_identifier', 'owner_user__username', 'owner_user__email', 'public_key_fingerprint')
+	ordering = ('-id',)
+	readonly_fields = ('public_key_fingerprint', 'fcm_registration_id', 'fcm_type', 'fcm_active')
+	exclude = ('public_key',)
+
+	@admin.display(description='FCM')
+	def fcm_status(self, obj):
+		if obj.fcm_device_id is None:
+			return '—'
+		return 'active' if obj.fcm_device.active else 'inactive'
+
+	@admin.display(description='FCM registration token')
+	def fcm_registration_id(self, obj):
+		if obj.fcm_device_id is None:
+			return '—'
+		return obj.fcm_device.registration_id
+
+	@admin.display(description='FCM device type')
+	def fcm_type(self, obj):
+		if obj.fcm_device_id is None:
+			return '—'
+		return obj.fcm_device.type
+
+	@admin.display(description='FCM active')
+	def fcm_active(self, obj):
+		if obj.fcm_device_id is None:
+			return '—'
+		return obj.fcm_device.active
+
+
 if settings.DEBUG == False:
 	try:
 		admin.site.unregister(OutstandingToken)
@@ -49,14 +97,6 @@ if settings.DEBUG == False:
 
 
 if settings.DEBUG == True:
-    
-	@admin.register(ManagerRole)
-	class ManagerRoleAdmin(admin.ModelAdmin):
-		list_display = ('id', 'manager', 'group', 'role')
-		list_filter = ('role', 'group')
-		search_fields = ('manager__username', 'manager__email', 'group__uuid', 'group__encrypted_name')
-		ordering = ('-id',)
-
     
 	@admin.register(AppGroup)
 	class GroupAdmin(admin.ModelAdmin):
@@ -142,45 +182,4 @@ if settings.DEBUG == True:
 		exclude = ('encrypted_blob', 'encrypted_caption', 'payload_nonce')
 
 
-	@admin.register(Device)
-	class DeviceAdmin(admin.ModelAdmin):
-		list_display = (
-			'id',
-			'device_identifier',
-			'owner_user',
-			'public_key_algorithm',
-			'public_key_fingerprint',
-			'fcm_status',
-		)
-		search_fields = ('device_identifier', 'owner_user__username', 'owner_user__email', 'public_key_fingerprint')
-		ordering = ('-id',)
-		readonly_fields = ('public_key_fingerprint', 'fcm_registration_id', 'fcm_type', 'fcm_active')
-		exclude = ('public_key',)
-
-		@admin.display(description='FCM')
-		def fcm_status(self, obj):
-			if obj.fcm_device_id is None:
-				return '—'
-			return 'active' if obj.fcm_device.active else 'inactive'
-
-		@admin.display(description='FCM registration token')
-		def fcm_registration_id(self, obj):
-			if obj.fcm_device_id is None:
-				return '—'
-			return obj.fcm_device.registration_id
-
-		@admin.display(description='FCM device type')
-		def fcm_type(self, obj):
-			if obj.fcm_device_id is None:
-				return '—'
-			return obj.fcm_device.type
-
-		@admin.display(description='FCM active')
-		def fcm_active(self, obj):
-			if obj.fcm_device_id is None:
-				return '—'
-			return obj.fcm_device.active
-
-
-
-
+	

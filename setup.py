@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
 	name='django-eyesonly',
-	version='0.1.2',
+	version='0.1.3',
 	description='Eyes Only Django application',
 	packages=find_packages(include=['eyesonly', 'eyesonly.*']),
 	include_package_data=True,
